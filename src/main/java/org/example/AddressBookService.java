@@ -1,5 +1,9 @@
 package org.example;
 
 public interface AddressBookService {
-     int insert(Contact contact);
+    void insert(Contact contact);
+
+    void edit();
+
+    int isExist(String firstname, String lastName);
 }
