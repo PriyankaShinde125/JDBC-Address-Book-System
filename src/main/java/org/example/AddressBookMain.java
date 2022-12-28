@@ -9,6 +9,7 @@ public class AddressBookMain {
     public static final int DELETE_CONTACT = 3;
     private static final int EXIT = 0;
     public static final int CITYWISE_OR_STATEWISE_CONTACTS = 4;
+    public static final int CITYWISE_OR_STATEWISE_CONTACT_COUNT = 5;
 
     public static void main(String[] args) throws SQLException {
         Scanner sc = new Scanner(System.in);
@@ -19,6 +20,7 @@ public class AddressBookMain {
                     "\n2 : Edit Contact" +
                     "\n3 : Delete Contact " +
                     "\n4 : Get citywise or statewise contacts" +
+                    "\n5 : Get citywise or statewise contact count" +
                     "\n0 : Exit");
             int choice = sc.nextInt();
             switch (choice) {
@@ -35,6 +37,9 @@ public class AddressBookMain {
                     break;
                 case CITYWISE_OR_STATEWISE_CONTACTS:
                     addressBookService.getCityWiseOrStateWiseContacts();
+                    break;
+                case CITYWISE_OR_STATEWISE_CONTACT_COUNT:
+                    addressBookService.getCityWiseOrStateWiseContactCount();
                     break;
                 default:
                     System.out.println("Invalid input");

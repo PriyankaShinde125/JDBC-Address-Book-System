@@ -14,4 +14,6 @@ public interface AddressBookService {
     void getCityWiseOrStateWiseContacts();
 
     void printResultSet(ResultSet rs);
+
+    void getCityWiseOrStateWiseContactCount();
 }

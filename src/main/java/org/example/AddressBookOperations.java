@@ -156,18 +156,14 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public void getCityWiseOrStateWiseContacts() {
-        System.out.println("Enter your choice : " +
-                "\n1 : Get given city contact " +
-                "\n2 : Get given state contact ");
-        Scanner sc = new Scanner(System.in);
-
-        int choice = sc.nextInt();
-        String getContactSql = "select * from tbl_addressbook ";
+        int choice = getCityOrState();
+        String cityOrState;
         if (choice == 1)
-            getContactSql = getContactSql + "where city = ?";
+            cityOrState = "city";
         else
-            getContactSql = getContactSql + "where state = ?";
-
+            cityOrState = "state";
+        String getContactSql = "select * from tbl_addressbook where " + cityOrState + " = ?";
+        Scanner sc = new Scanner(System.in);
         System.out.println("Enter value : ");
         String input = sc.next();
         try (Connection con = Constants.getConnection()) {
@@ -197,5 +193,35 @@ public class AddressBookOperations implements AddressBookService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void getCityWiseOrStateWiseContactCount() {
+        int choice = getCityOrState();
+        String cityOrState;
+        if (choice == 1)
+            cityOrState = "city";
+        else
+            cityOrState = "state";
+        String getContactCountSql = "select count(*) as totalcontacts, " + cityOrState + " from tbl_addressbook group by " + cityOrState;
+        try (Connection con = Constants.getConnection()) {
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(getContactCountSql);
+            System.out.println("Count \t " + cityOrState);
+            while (rs.next()) {
+                System.out.println(rs.getString("totalcontacts") + " \t " + rs.getString(cityOrState));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    int getCityOrState() {
+        System.out.println("Enter your choice : " +
+                "\n1 : Get given city contact " +
+                "\n2 : Get given state contact ");
+        Scanner sc = new Scanner(System.in);
+        int choice = sc.nextInt();
+        return choice;
     }
 }
