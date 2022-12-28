@@ -272,6 +272,21 @@ public class AddressBookOperations implements AddressBookService {
         return false;
     }
 
+    @Override
+    public void getTypeWiseCount() {
+        String typeWiseCountSql="select count(*) as totalcontacts,type from tbl_contact right join tbl_addressbook on tbl_contact.addressbookname = tbl_addressbook.name group by tbl_addressbook.type";
+        try (Connection con = Constants.getConnection()) {
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(typeWiseCountSql);
+            System.out.println("Count \t " + "Type");
+            while (rs.next()) {
+                System.out.println(rs.getString("totalcontacts") + " \t " + rs.getString("type"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     int getCityOrState() {
         System.out.println("Enter your choice : " +
                 "\n1 : Get given city contact " +

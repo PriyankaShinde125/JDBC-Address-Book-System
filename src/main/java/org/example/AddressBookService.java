@@ -20,4 +20,6 @@ public interface AddressBookService {
     void getSortedContactsForGivenCity();
     String selectAddressBook();
     boolean isExistAddressBook(String name);
+
+    void getTypeWiseCount();
 }
