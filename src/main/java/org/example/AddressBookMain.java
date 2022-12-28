@@ -6,6 +6,7 @@ import java.util.Scanner;
 public class AddressBookMain {
     private static final int INSERT_CONTACT = 1;
     public static final int EDIT_CONTACT = 2;
+    public static final int DELETE_CONTACT = 3;
     private static final int EXIT = 0;
 
     public static void main(String[] args) throws SQLException {
@@ -15,6 +16,7 @@ public class AddressBookMain {
             System.out.println("Enter your choice : " +
                     "\n1 : Insert contact " +
                     "\n2 : Edit Contact" +
+                    "\n3 : Delete Contact " +
                     "\n0 : Exit");
             int choice = sc.nextInt();
             switch (choice) {
@@ -25,6 +27,9 @@ public class AddressBookMain {
                     break;
                 case EDIT_CONTACT:
                     addressBookService.edit();
+                    break;
+                case DELETE_CONTACT:
+                    addressBookService.delete();
                     break;
                 default:
                     System.out.println("Invalid input");

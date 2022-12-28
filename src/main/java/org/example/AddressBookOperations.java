@@ -12,12 +12,13 @@ public class AddressBookOperations implements AddressBookService {
     public static final int CITY = 6;
     public static final int STATE = 7;
     public static final int ZIP = 8;
+    public static final int ID = 1;
 
     @Override
     public void insert(Contact contact) {
         Connection con = Constants.getConnection();
         PreparedStatement stmt = null;
-        if(isExist(contact.getFirstName(), contact.getLastName()) > 0) {
+        if (isExist(contact.getFirstName(), contact.getLastName()) > 0) {
             System.out.println("Contact is already exist");
             return;
         }
@@ -116,7 +117,7 @@ public class AddressBookOperations implements AddressBookService {
         int contactId = 0;
         Connection con = Constants.getConnection();
         try {
-            PreparedStatement pst = con.prepareStatement(Constants.SELECT_CONTACT_BY_NAME);
+            PreparedStatement pst = con.prepareStatement(Constants.SQL_SELECT_CONTACT_BY_NAME);
             pst.setString(FIRST_NAME, firstname);
             pst.setString(LAST_NAME, lastName);
             ResultSet resultSet = pst.executeQuery();
@@ -127,5 +128,28 @@ public class AddressBookOperations implements AddressBookService {
             throw new RuntimeException(e);
         }
         return contactId;
+    }
+
+    @Override
+    public void delete() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter firstname and lastname");
+        String firstName = sc.next();
+        String lastname = sc.next();
+        int contactId;
+        if ((contactId = isExist(firstName, lastname)) == 0) {
+            System.out.println("Contact not exist");
+            return;
+        }
+        Connection con = Constants.getConnection();
+        try {
+            PreparedStatement pst = con.prepareStatement(Constants.SQL_DELETE_CONTACT);
+            pst.setInt(ID, contactId);
+            int result = pst.executeUpdate();
+            if (result > 0)
+                System.out.println("Contact deleted");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -6,4 +6,6 @@ public interface AddressBookService {
     void edit();
 
     int isExist(String firstname, String lastName);
+
+    void delete();
 }
