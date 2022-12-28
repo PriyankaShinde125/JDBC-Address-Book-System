@@ -1,6 +1,7 @@
 package org.example;
 
 import java.sql.*;
+import java.util.Random;
 import java.util.Scanner;
 
 public class AddressBookOperations implements AddressBookService {
@@ -148,6 +149,51 @@ public class AddressBookOperations implements AddressBookService {
             int result = pst.executeUpdate();
             if (result > 0)
                 System.out.println("Contact deleted");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void getCityWiseOrStateWiseContacts() {
+        System.out.println("Enter your choice : " +
+                "\n1 : Get given city contact " +
+                "\n2 : Get given state contact ");
+        Scanner sc = new Scanner(System.in);
+
+        int choice = sc.nextInt();
+        String getContactSql = "select * from tbl_addressbook ";
+        if (choice == 1)
+            getContactSql = getContactSql + "where city = ?";
+        else
+            getContactSql = getContactSql + "where state = ?";
+
+        System.out.println("Enter value : ");
+        String input = sc.next();
+        try (Connection con = Constants.getConnection()) {
+            PreparedStatement pst = con.prepareStatement(getContactSql);
+            pst.setString(1, input);
+            ResultSet rs = pst.executeQuery();
+            printResultSet(rs);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void printResultSet(ResultSet rs) {
+        try {
+            while (rs.next()) {
+                System.out.println("First name = " + rs.getString("firstname"));
+                System.out.println("Last name = " + rs.getString("lastname"));
+                System.out.println("Phone number = " + rs.getString("phonenumber"));
+                System.out.println("Email id = " + rs.getString("emailid"));
+                System.out.println("Area = " + rs.getString("area"));
+                System.out.println("City = " + rs.getString("city"));
+                System.out.println("State = " + rs.getString("state"));
+                System.out.println("Zip = " + rs.getString("zip"));
+                System.out.println("-----------------------------------------------------------");
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
