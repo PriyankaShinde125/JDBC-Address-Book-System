@@ -49,7 +49,7 @@ public class AddressBookOperations implements AddressBookService {
         String lastname = sc.next();
         int contactId;
         if ((contactId = isExist(firstName, lastname)) > 0) {
-            String updateSql = "Update tbl_addressbook set ";
+            String updateSql = "Update tbl_contact set ";
             String updateWhereCondition = " where id = " + contactId;
             String updateField = null;
             System.out.println("Enter which field do you want to edit");
@@ -159,7 +159,7 @@ public class AddressBookOperations implements AddressBookService {
             cityOrState = "city";
         else
             cityOrState = "state";
-        String getContactSql = "select * from tbl_addressbook where " + cityOrState + " = ?";
+        String getContactSql = "select * from tbl_contact where " + cityOrState + " = ?";
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter value : ");
         String input = sc.next();
@@ -200,7 +200,7 @@ public class AddressBookOperations implements AddressBookService {
             cityOrState = "city";
         else
             cityOrState = "state";
-        String getContactCountSql = "select count(*) as totalcontacts, " + cityOrState + " from tbl_addressbook group by " + cityOrState;
+        String getContactCountSql = "select count(*) as totalcontacts, " + cityOrState + " from tbl_contact group by " + cityOrState;
         try (Connection con = Constants.getConnection()) {
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(getContactCountSql);
@@ -215,7 +215,7 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public void getSortedContactsForGivenCity() {
-        String getContactSql = "select * from tbl_addressbook where city = ? order by firstname,lastname";
+        String getContactSql = "select * from tbl_contact where city = ? order by firstname,lastname";
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter value : ");
         String input = sc.next();
