@@ -10,6 +10,7 @@ public class Constants {
     public static final String DB_USER = "root";
     public static final String DB_PASSWORD = "Root@123";
     public static final String DRIVER_NAME = "com.mysql.cj.jdbc.Driver";
+    public static final String CREATE_ADDRESS_BOOK = "create table tbl_addressbook(id int not null primary key auto_increment, firstname varchar(50) not null,lastname varchar(50) not null,phonenumber long not null,emailid varchar(100) not null, area varchar(50) not null,city varchar(30) not null,state varchar(30) not null, zip int not null)";
 
     public static Connection getConnection() {
         Connection con = null;
