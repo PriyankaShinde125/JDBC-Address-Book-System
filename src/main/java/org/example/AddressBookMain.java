@@ -1,19 +1,32 @@
 package org.example;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Scanner;
 
 public class AddressBookMain {
-    public static void main(String[] args) throws SQLException {
-        Connection con = Constants.getConnection();
-        if (con != null){
-            System.out.println("Connected to database");
-            Statement stmt = con.createStatement();
-            stmt.executeUpdate(Constants.CREATE_ADDRESS_BOOK);
-        }
-        else
-            System.out.println("Connection couldn't establish");
-    }
+    private static final int INSERT_CONTACT = 1;
+    private static final int EXIT = 0;
 
+    public static void main(String[] args) throws SQLException {
+        Scanner sc = new Scanner(System.in);
+        AddressBookService addressBookService = new AddressBookOperations();
+        while (true) {
+            System.out.println("Enter your choice : " +
+                    "\n1 : Insert contact " +
+                    "\n0 : Exit");
+            int choice = sc.nextInt();
+            switch (choice) {
+                case INSERT_CONTACT:
+                    Contact contact = new Contact();
+                    contact.create();
+                    addressBookService.insert(contact);
+                    break;
+                default:
+                    System.out.println("Invalid input");
+                    break;
+                case EXIT:
+                    return;
+            }
+        }
+    }
 }
