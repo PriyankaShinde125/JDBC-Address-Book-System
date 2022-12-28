@@ -17,13 +17,12 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public void insert(Contact contact) {
-        Connection con = Constants.getConnection();
         PreparedStatement stmt = null;
         if (isExist(contact.getFirstName(), contact.getLastName()) > 0) {
             System.out.println("Contact is already exist");
             return;
         }
-        try {
+        try (Connection con = Constants.getConnection()) {
             stmt = con.prepareStatement(Constants.SQL_INSERT_CONTACT);
             stmt.setString(FIRST_NAME, contact.getFirstName());
             stmt.setString(LAST_NAME, contact.getLastName());
@@ -99,9 +98,9 @@ public class AddressBookOperations implements AddressBookService {
                 default:
                     System.out.println("Invalid choice");
             }
-            try {
-                String updateWholeSql = updateSql + updateField + updateWhereCondition;
-                Connection con = Constants.getConnection();
+
+            String updateWholeSql = updateSql + updateField + updateWhereCondition;
+            try (Connection con = Constants.getConnection()) {
                 Statement stmt = con.createStatement();
                 int result = stmt.executeUpdate(updateWholeSql);
                 if (result > 0) {
@@ -116,8 +115,7 @@ public class AddressBookOperations implements AddressBookService {
     @Override
     public int isExist(String firstname, String lastName) {
         int contactId = 0;
-        Connection con = Constants.getConnection();
-        try {
+        try (Connection con = Constants.getConnection()) {
             PreparedStatement pst = con.prepareStatement(Constants.SQL_SELECT_CONTACT_BY_NAME);
             pst.setString(FIRST_NAME, firstname);
             pst.setString(LAST_NAME, lastName);
@@ -142,8 +140,7 @@ public class AddressBookOperations implements AddressBookService {
             System.out.println("Contact not exist");
             return;
         }
-        Connection con = Constants.getConnection();
-        try {
+        try (Connection con = Constants.getConnection()) {
             PreparedStatement pst = con.prepareStatement(Constants.SQL_DELETE_CONTACT);
             pst.setInt(ID, contactId);
             int result = pst.executeUpdate();
@@ -211,6 +208,22 @@ public class AddressBookOperations implements AddressBookService {
             while (rs.next()) {
                 System.out.println(rs.getString("totalcontacts") + " \t " + rs.getString(cityOrState));
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void getSortedContactsForGivenCity() {
+        String getContactSql = "select * from tbl_addressbook where city = ? order by firstname,lastname";
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter value : ");
+        String input = sc.next();
+        try (Connection con = Constants.getConnection()) {
+            PreparedStatement pst = con.prepareStatement(getContactSql);
+            pst.setString(1, input);
+            ResultSet rs = pst.executeQuery();
+            printResultSet(rs);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
