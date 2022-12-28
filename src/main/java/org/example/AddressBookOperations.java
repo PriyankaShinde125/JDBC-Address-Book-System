@@ -14,6 +14,7 @@ public class AddressBookOperations implements AddressBookService {
     public static final int STATE = 7;
     public static final int ZIP = 8;
     public static final int ID = 1;
+    private static final int ADDRESS_BOOK_NAME = 9;
 
     @Override
     public void insert(Contact contact) {
@@ -22,6 +23,13 @@ public class AddressBookOperations implements AddressBookService {
             System.out.println("Contact is already exist");
             return;
         }
+
+        String addressBookName = selectAddressBook();
+        if (!isExistAddressBook(addressBookName)) {
+            System.out.println("Invalid address book name");
+            return;
+        }
+
         try (Connection con = Constants.getConnection()) {
             stmt = con.prepareStatement(Constants.SQL_INSERT_CONTACT);
             stmt.setString(FIRST_NAME, contact.getFirstName());
@@ -32,10 +40,10 @@ public class AddressBookOperations implements AddressBookService {
             stmt.setString(CITY, contact.getCity());
             stmt.setString(STATE, contact.getState());
             stmt.setInt(ZIP, contact.getZip());
+            stmt.setString(ADDRESS_BOOK_NAME,addressBookName);
             int result = stmt.executeUpdate();
             if (result > 0)
                 System.out.println("contact added successfully");
-            con.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -227,6 +235,41 @@ public class AddressBookOperations implements AddressBookService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String selectAddressBook() {
+        String listAddressBook = "select * from tbl_addressbook";
+        String addressBookName;
+        try (Connection con = Constants.getConnection()) {
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(listAddressBook);
+            Scanner sc = new Scanner(System.in);
+            System.out.println("Select from following");
+            System.out.println("name \t type");
+            while (rs.next()) {
+                System.out.println(rs.getString("name") + " \t " + rs.getString("type"));
+            }
+            addressBookName = sc.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return addressBookName;
+    }
+
+    @Override
+    public boolean isExistAddressBook(String name) {
+        String sql = "select * from tbl_addressbook where name = ?";
+        try (Connection con = Constants.getConnection()) {
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, name);
+            ResultSet resultSet = pst.executeQuery();
+            if (resultSet.next())
+                return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     int getCityOrState() {

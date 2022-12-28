@@ -18,4 +18,6 @@ public interface AddressBookService {
     void getCityWiseOrStateWiseContactCount();
 
     void getSortedContactsForGivenCity();
+    String selectAddressBook();
+    boolean isExistAddressBook(String name);
 }
