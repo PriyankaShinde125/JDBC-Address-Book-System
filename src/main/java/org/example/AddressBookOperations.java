@@ -26,7 +26,8 @@ public class AddressBookOperations implements AddressBookService {
 
         int contactId;
         try (Connection con = Constants.getConnection()) {
-            stmt = con.prepareStatement(Constants.SQL_INSERT_CONTACT, PreparedStatement.RETURN_GENERATED_KEYS);
+            String sqlInsertContact = "insert into tbl_contact VALUES ( default , ?, ?, ?, ?, ?, ?, ?, ?)";
+            stmt = con.prepareStatement(sqlInsertContact, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt.setString(FIRST_NAME, contact.getFirstName());
             stmt.setString(LAST_NAME, contact.getLastName());
             stmt.setLong(PHONE_NUMBER, contact.getPhoneNumber());
@@ -132,9 +133,10 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public int isExist(String firstname, String lastName) {
+        String sqlSelectContactByName = "select * from tbl_contact where firstname = ? and lastname = ?";
         int contactId = 0;
         try (Connection con = Constants.getConnection()) {
-            PreparedStatement pst = con.prepareStatement(Constants.SQL_SELECT_CONTACT_BY_NAME);
+            PreparedStatement pst = con.prepareStatement(sqlSelectContactByName);
             pst.setString(FIRST_NAME, firstname);
             pst.setString(LAST_NAME, lastName);
             ResultSet resultSet = pst.executeQuery();
@@ -159,7 +161,8 @@ public class AddressBookOperations implements AddressBookService {
             return;
         }
         try (Connection con = Constants.getConnection()) {
-            PreparedStatement pst = con.prepareStatement(Constants.SQL_DELETE_CONTACT);
+            String sqlDeleteContact = "delete from tbl_contact where id = ?";
+            PreparedStatement pst = con.prepareStatement(sqlDeleteContact);
             pst.setInt(ID, contactId);
             int result = pst.executeUpdate();
             if (result > 0)
@@ -177,12 +180,12 @@ public class AddressBookOperations implements AddressBookService {
             cityOrState = "city";
         else
             cityOrState = "state";
-        String getContactSql = "select * from tbl_contact where " + cityOrState + " = ?";
+        String sqlGetContact = "select * from tbl_contact where " + cityOrState + " = ?";
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter value : ");
         String input = sc.next();
         try (Connection con = Constants.getConnection()) {
-            PreparedStatement pst = con.prepareStatement(getContactSql);
+            PreparedStatement pst = con.prepareStatement(sqlGetContact);
             pst.setString(1, input);
             ResultSet rs = pst.executeQuery();
             printResultSet(rs);
@@ -218,10 +221,10 @@ public class AddressBookOperations implements AddressBookService {
             cityOrState = "city";
         else
             cityOrState = "state";
-        String getContactCountSql = "select count(*) as totalcontacts, " + cityOrState + " from tbl_contact group by " + cityOrState;
+        String sqlGetContactCount = "select count(*) as totalcontacts, " + cityOrState + " from tbl_contact group by " + cityOrState;
         try (Connection con = Constants.getConnection()) {
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(getContactCountSql);
+            ResultSet rs = stmt.executeQuery(sqlGetContactCount);
             System.out.println("Count \t " + cityOrState);
             while (rs.next()) {
                 System.out.println(rs.getString("totalcontacts") + " \t " + rs.getString(cityOrState));
@@ -233,12 +236,12 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public void getSortedContactsForGivenCity() {
-        String getContactSql = "select * from tbl_contact where city = ? order by firstname,lastname";
+        String sqlGetContact = "select * from tbl_contact where city = ? order by firstname,lastname";
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter value : ");
         String input = sc.next();
         try (Connection con = Constants.getConnection()) {
-            PreparedStatement pst = con.prepareStatement(getContactSql);
+            PreparedStatement pst = con.prepareStatement(sqlGetContact);
             pst.setString(1, input);
             ResultSet rs = pst.executeQuery();
             printResultSet(rs);
@@ -249,11 +252,11 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public List<Integer> selectAddressBook() {
-        String listAddressBook = "select * from tbl_addressbook";
+        String sqlListAddressBook = "select * from tbl_addressbook";
         List<Integer> addressBookIds = new ArrayList<>();
         try (Connection con = Constants.getConnection()) {
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(listAddressBook);
+            ResultSet rs = stmt.executeQuery(sqlListAddressBook);
             Scanner sc = new Scanner(System.in);
             System.out.println("Select from following");
             System.out.println("id \t type");
@@ -270,9 +273,9 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public boolean isExistAddressBook(int id) {
-        String sql = "select * from tbl_addressbook where id = ?";
+        String sqlGetAddressBook = "select * from tbl_addressbook where id = ?";
         try (Connection con = Constants.getConnection()) {
-            PreparedStatement pst = con.prepareStatement(sql);
+            PreparedStatement pst = con.prepareStatement(sqlGetAddressBook);
             pst.setInt(1, id);
             ResultSet resultSet = pst.executeQuery();
             if (resultSet.next())
@@ -285,10 +288,10 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public void getTypeWiseCount() {
-        String typeWiseCountSql = "SELECT count(*) as totalcontacts,type FROM tbl_contact c JOIN tbl_contact_addressbook ca ON c.id = ca.contactid JOIN tbl_addressbook a ON ca.addressbookid = a.id group by a.type";
+        String sqlTypeWiseCount = "SELECT count(*) as totalcontacts,type FROM tbl_contact c JOIN tbl_contact_addressbook ca ON c.id = ca.contactid JOIN tbl_addressbook a ON ca.addressbookid = a.id group by a.type";
         try (Connection con = Constants.getConnection()) {
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(typeWiseCountSql);
+            ResultSet rs = stmt.executeQuery(sqlTypeWiseCount);
             System.out.println("Count \t " + "Type");
             while (rs.next()) {
                 System.out.println(rs.getString("totalcontacts") + " \t " + rs.getString("type"));
