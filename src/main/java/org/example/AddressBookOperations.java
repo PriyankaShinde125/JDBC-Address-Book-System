@@ -14,7 +14,7 @@ public class AddressBookOperations implements AddressBookService {
     public static final int STATE = 7;
     public static final int ZIP = 8;
     public static final int ID = 1;
-    private static final int ADDRESS_BOOK_NAME = 9;
+
 
     @Override
     public void insert(Contact contact) {
@@ -24,14 +24,14 @@ public class AddressBookOperations implements AddressBookService {
             return;
         }
 
-        String addressBookName = selectAddressBook();
-        if (!isExistAddressBook(addressBookName)) {
+        int addressBookId = selectAddressBook();
+        if (!isExistAddressBook(addressBookId)) {
             System.out.println("Invalid address book name");
             return;
         }
-
+        int contactId;
         try (Connection con = Constants.getConnection()) {
-            stmt = con.prepareStatement(Constants.SQL_INSERT_CONTACT);
+            stmt = con.prepareStatement(Constants.SQL_INSERT_CONTACT,PreparedStatement.RETURN_GENERATED_KEYS);
             stmt.setString(FIRST_NAME, contact.getFirstName());
             stmt.setString(LAST_NAME, contact.getLastName());
             stmt.setLong(PHONE_NUMBER, contact.getPhoneNumber());
@@ -40,10 +40,18 @@ public class AddressBookOperations implements AddressBookService {
             stmt.setString(CITY, contact.getCity());
             stmt.setString(STATE, contact.getState());
             stmt.setInt(ZIP, contact.getZip());
-            stmt.setString(ADDRESS_BOOK_NAME,addressBookName);
-            int result = stmt.executeUpdate();
+            stmt.executeUpdate();
+            ResultSet contactIds = stmt.getGeneratedKeys();
+            if (contactIds.next()) {
+                contactId = contactIds.getInt(1);
+            } else {
+                throw new SQLException("Creating contact failed, no ID obtained.");
+            }
+            String sqlInsertIntoAddressContact = "insert into tbl_contact_addressbook values(default," + addressBookId + "," + contactId + ")";
+            Statement statement = con.createStatement();
+            int result = statement.executeUpdate(sqlInsertIntoAddressContact);
             if (result > 0)
-                System.out.println("contact added successfully");
+                System.out.println("Insertion successful");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -56,68 +64,70 @@ public class AddressBookOperations implements AddressBookService {
         String firstName = sc.next();
         String lastname = sc.next();
         int contactId;
-        if ((contactId = isExist(firstName, lastname)) > 0) {
-            String updateSql = "Update tbl_contact set ";
-            String updateWhereCondition = " where id = " + contactId;
-            String updateField = null;
-            System.out.println("Enter which field do you want to edit");
-            System.out.println("1 : Firstname " +
-                    "\n2 : Lastname " +
-                    "\n3 : Phone number " +
-                    "\n4 : EmailId " +
-                    "\n5 : Area" +
-                    "\n6 : City" +
-                    "\n7 : State" +
-                    "\n8 : Zip");
-            int fieldToEdit = sc.nextInt();
-            switch (fieldToEdit) {
-                case FIRST_NAME:
-                    System.out.println("Enter firstname :");
-                    updateField = "firstname = '" + sc.next() + "'";
-                    break;
-                case LAST_NAME:
-                    System.out.println("Enter lastname :");
-                    updateField = "lastname = '" + sc.next() + "'";
-                    break;
-                case PHONE_NUMBER:
-                    System.out.println("Enter phonenumber :");
-                    updateField = "phonenumber = " + sc.nextLong();
-                    break;
-                case EMAIL_ID:
-                    System.out.println("Enter Email Id :");
-                    updateField = "emailid = '" + sc.next() + "'";
-                    break;
-                case AREA:
-                    System.out.println("Enter area :");
-                    updateField = "area = '" + sc.next() + "'";
-                    break;
-                case CITY:
-                    System.out.println("Enter city :");
-                    updateField = "city = '" + sc.next() + "'";
-                    break;
-                case STATE:
-                    System.out.println("Enter state :");
-                    updateField = "state = '" + sc.next() + "'";
-                    break;
-                case ZIP:
-                    System.out.println("Enter zip :");
-                    updateField = "zip = '" + sc.next() + "'";
-                    break;
-                default:
-                    System.out.println("Invalid choice");
-            }
+        if ((contactId = isExist(firstName, lastname)) == 0) {
+            System.out.println("Contact is not present in addressbook");
+            return;
+        }
+        String updateSql = "Update tbl_contact set ";
+        String updateWhereCondition = " where id = " + contactId;
+        String updateField = null;
+        System.out.println("Enter which field do you want to edit");
+        System.out.println("1 : Firstname " +
+                "\n2 : Lastname " +
+                "\n3 : Phone number " +
+                "\n4 : EmailId " +
+                "\n5 : Area" +
+                "\n6 : City" +
+                "\n7 : State" +
+                "\n8 : Zip");
+        int fieldToEdit = sc.nextInt();
+        switch (fieldToEdit) {
+            case FIRST_NAME:
+                System.out.println("Enter firstname :");
+                updateField = "firstname = '" + sc.next() + "'";
+                break;
+            case LAST_NAME:
+                System.out.println("Enter lastname :");
+                updateField = "lastname = '" + sc.next() + "'";
+                break;
+            case PHONE_NUMBER:
+                System.out.println("Enter phonenumber :");
+                updateField = "phonenumber = " + sc.nextLong();
+                break;
+            case EMAIL_ID:
+                System.out.println("Enter Email Id :");
+                updateField = "emailid = '" + sc.next() + "'";
+                break;
+            case AREA:
+                System.out.println("Enter area :");
+                updateField = "area = '" + sc.next() + "'";
+                break;
+            case CITY:
+                System.out.println("Enter city :");
+                updateField = "city = '" + sc.next() + "'";
+                break;
+            case STATE:
+                System.out.println("Enter state :");
+                updateField = "state = '" + sc.next() + "'";
+                break;
+            case ZIP:
+                System.out.println("Enter zip :");
+                updateField = "zip = '" + sc.next() + "'";
+                break;
+            default:
+                System.out.println("Invalid choice");
+        }
 
-            String updateWholeSql = updateSql + updateField + updateWhereCondition;
-            try (Connection con = Constants.getConnection()) {
-                Statement stmt = con.createStatement();
-                int result = stmt.executeUpdate(updateWholeSql);
-                if (result > 0) {
-                    System.out.println("Contact updated successfully");
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+        String updateWholeSql = updateSql + updateField + updateWhereCondition;
+        try (Connection con = Constants.getConnection()) {
+            Statement stmt = con.createStatement();
+            int result = stmt.executeUpdate(updateWholeSql);
+            if (result > 0) {
+                System.out.println("Contact updated successfully");
             }
-        } else System.out.println("Contact is not present in addressbook");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -238,31 +248,31 @@ public class AddressBookOperations implements AddressBookService {
     }
 
     @Override
-    public String selectAddressBook() {
+    public int selectAddressBook() {
         String listAddressBook = "select * from tbl_addressbook";
-        String addressBookName;
+        int addressBookId;
         try (Connection con = Constants.getConnection()) {
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(listAddressBook);
             Scanner sc = new Scanner(System.in);
             System.out.println("Select from following");
-            System.out.println("name \t type");
+            System.out.println("id \t type");
             while (rs.next()) {
-                System.out.println(rs.getString("name") + " \t " + rs.getString("type"));
+                System.out.println(rs.getString("id") + " \t " + rs.getString("type"));
             }
-            addressBookName = sc.next();
+            addressBookId = sc.nextInt();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return addressBookName;
+        return addressBookId;
     }
 
     @Override
-    public boolean isExistAddressBook(String name) {
-        String sql = "select * from tbl_addressbook where name = ?";
+    public boolean isExistAddressBook(int id) {
+        String sql = "select * from tbl_addressbook where id = ?";
         try (Connection con = Constants.getConnection()) {
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, name);
+            pst.setInt(1, id);
             ResultSet resultSet = pst.executeQuery();
             if (resultSet.next())
                 return true;
@@ -274,7 +284,7 @@ public class AddressBookOperations implements AddressBookService {
 
     @Override
     public void getTypeWiseCount() {
-        String typeWiseCountSql="select count(*) as totalcontacts,type from tbl_contact right join tbl_addressbook on tbl_contact.addressbookname = tbl_addressbook.name group by tbl_addressbook.type";
+        String typeWiseCountSql = "SELECT count(*) as totalcontacts,type FROM tbl_contact c JOIN tbl_contact_addressbook ca ON c.id = ca.contactid JOIN tbl_addressbook a ON ca.addressbookid = a.id group by a.type";
         try (Connection con = Constants.getConnection()) {
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(typeWiseCountSql);

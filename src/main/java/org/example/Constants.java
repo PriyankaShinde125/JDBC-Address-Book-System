@@ -11,7 +11,7 @@ public class Constants {
     public static final String DB_PASSWORD = "Root@123";
     public static final String DRIVER_NAME = "com.mysql.cj.jdbc.Driver";
     public static final String CREATE_ADDRESS_BOOK = "create table tbl_contact(id int not null primary key auto_increment, firstname varchar(50) not null,lastname varchar(50) not null,phonenumber long not null,emailid varchar(100) not null, area varchar(50) not null,city varchar(30) not null,state varchar(30) not null, zip int not null)";
-    public static final String SQL_INSERT_CONTACT = "insert into tbl_contact VALUES ( default , ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String SQL_INSERT_CONTACT = "insert into tbl_contact VALUES ( default , ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String SQL_SELECT_CONTACT_BY_NAME = "select * from tbl_contact where firstname = ? and lastname = ?";
     public static final String SQL_DELETE_CONTACT = "delete from tbl_contact where id = ?";
 
