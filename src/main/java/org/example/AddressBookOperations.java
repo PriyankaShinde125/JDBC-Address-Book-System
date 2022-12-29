@@ -1,8 +1,8 @@
 package org.example;
 
 import java.sql.*;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AddressBookOperations implements AddressBookService {
     public static final int FIRST_NAME = 1;
@@ -17,21 +17,16 @@ public class AddressBookOperations implements AddressBookService {
 
 
     @Override
-    public void insert(Contact contact) {
+    public void insert(Contact contact, List<Integer> addressBooks) {
         PreparedStatement stmt = null;
         if (isExist(contact.getFirstName(), contact.getLastName()) > 0) {
             System.out.println("Contact is already exist");
             return;
         }
 
-        int addressBookId = selectAddressBook();
-        if (!isExistAddressBook(addressBookId)) {
-            System.out.println("Invalid address book name");
-            return;
-        }
         int contactId;
         try (Connection con = Constants.getConnection()) {
-            stmt = con.prepareStatement(Constants.SQL_INSERT_CONTACT,PreparedStatement.RETURN_GENERATED_KEYS);
+            stmt = con.prepareStatement(Constants.SQL_INSERT_CONTACT, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt.setString(FIRST_NAME, contact.getFirstName());
             stmt.setString(LAST_NAME, contact.getLastName());
             stmt.setLong(PHONE_NUMBER, contact.getPhoneNumber());
@@ -47,10 +42,15 @@ public class AddressBookOperations implements AddressBookService {
             } else {
                 throw new SQLException("Creating contact failed, no ID obtained.");
             }
-            String sqlInsertIntoAddressContact = "insert into tbl_contact_addressbook values(default," + addressBookId + "," + contactId + ")";
-            Statement statement = con.createStatement();
-            int result = statement.executeUpdate(sqlInsertIntoAddressContact);
-            if (result > 0)
+            String sqlInsertIntoAddressContact = "insert into tbl_contact_addressbook values(default,?,?)";
+            PreparedStatement statement = con.prepareStatement(sqlInsertIntoAddressContact);
+            for (Integer integer : addressBooks) {
+                statement.setInt(1, integer);
+                statement.setInt(2, contactId);
+                statement.addBatch();
+            }
+            int[] result = statement.executeBatch();
+            if (result.length > 0)
                 System.out.println("Insertion successful");
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -248,9 +248,9 @@ public class AddressBookOperations implements AddressBookService {
     }
 
     @Override
-    public int selectAddressBook() {
+    public List<Integer> selectAddressBook() {
         String listAddressBook = "select * from tbl_addressbook";
-        int addressBookId;
+        List<Integer> addressBookIds = new ArrayList<>();
         try (Connection con = Constants.getConnection()) {
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(listAddressBook);
@@ -260,11 +260,12 @@ public class AddressBookOperations implements AddressBookService {
             while (rs.next()) {
                 System.out.println(rs.getString("id") + " \t " + rs.getString("type"));
             }
-            addressBookId = sc.nextInt();
+            String[] inputIds = sc.nextLine().split("[\\s \\- ,. :]");
+            Arrays.stream(inputIds).forEach(s -> addressBookIds.add(Integer.parseInt(s)));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return addressBookId;
+        return addressBookIds;
     }
 
     @Override

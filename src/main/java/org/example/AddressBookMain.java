@@ -1,6 +1,7 @@
 package org.example;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Scanner;
 
 public class AddressBookMain {
@@ -30,8 +31,9 @@ public class AddressBookMain {
             switch (choice) {
                 case INSERT_CONTACT:
                     Contact contact = new Contact();
+                    List<Integer> selectedAddressBooks = addressBookService.selectAddressBook();
                     contact.create();
-                    addressBookService.insert(contact);
+                    addressBookService.insert(contact,selectedAddressBooks);
                     break;
                 case EDIT_CONTACT:
                     addressBookService.edit();

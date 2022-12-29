@@ -1,10 +1,11 @@
 package org.example;
 
 import java.sql.ResultSet;
+import java.util.List;
 
 public interface AddressBookService {
 
-    void insert(Contact contact);
+    void insert(Contact contact,List<Integer> addressBooks);
 
     void edit();
 
@@ -19,7 +20,7 @@ public interface AddressBookService {
     void getCityWiseOrStateWiseContactCount();
 
     void getSortedContactsForGivenCity();
-    int selectAddressBook();
+    List<Integer> selectAddressBook();
     boolean isExistAddressBook(int id);
 
     void getTypeWiseCount();
