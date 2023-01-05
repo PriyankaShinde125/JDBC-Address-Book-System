@@ -63,6 +63,7 @@ public class AddressBookOperations implements AddressBookService {
         } catch (SQLException e) {
             System.out.println("Contact creation failed");
             con.rollback(savepoint1);
+            con.close();
         }
     }
 
