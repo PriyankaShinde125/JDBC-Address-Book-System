@@ -17,7 +17,7 @@ public class AddressBookOperations implements AddressBookService {
 
 
     @Override
-    public void insert(Contact contact, List<Integer> addressBooks) {
+    public void insert(Contact contact, List<Integer> addressBooks) throws SQLException {
         PreparedStatement stmt = null;
         if (isExist(contact.getFirstName(), contact.getLastName()) > 0) {
             System.out.println("Contact is already exist");
@@ -25,7 +25,11 @@ public class AddressBookOperations implements AddressBookService {
         }
 
         int contactId;
-        try (Connection con = Constants.getConnection()) {
+        Connection con = Constants.getConnection();
+        Savepoint savepoint1 = null;
+        try {
+            con.setAutoCommit(false);
+            savepoint1 = con.setSavepoint("Savepoint1");
             String sqlInsertContact = "insert into tbl_contact VALUES ( default , ?, ?, ?, ?, ?, ?, ?, ?)";
             stmt = con.prepareStatement(sqlInsertContact, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt.setString(FIRST_NAME, contact.getFirstName());
@@ -51,10 +55,14 @@ public class AddressBookOperations implements AddressBookService {
                 statement.addBatch();
             }
             int[] result = statement.executeBatch();
-            if (result.length > 0)
+            if (result.length > 0) {
                 System.out.println("Insertion successful");
+                con.commit();
+                con.close();
+            }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println("Contact creation failed");
+            con.rollback(savepoint1);
         }
     }
 

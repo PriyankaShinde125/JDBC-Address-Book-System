@@ -1,11 +1,12 @@
 package org.example;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public interface AddressBookService {
 
-    void insert(Contact contact,List<Integer> addressBooks);
+    void insert(Contact contact,List<Integer> addressBooks) throws SQLException;
 
     void edit();
 
