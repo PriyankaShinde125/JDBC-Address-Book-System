@@ -17,6 +17,18 @@ public class AddressBookOperations implements AddressBookService {
 
 
     @Override
+    public void listContacts() {
+        String sqlListContacts = "select * from tbl_contact";
+        try (Connection con = Constants.getConnection()) {
+            Statement pst = con.createStatement();
+            ResultSet resultSet = pst.executeQuery(sqlListContacts);
+            printResultSet(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void insert(Contact contact, List<Integer> addressBooks) throws SQLException {
         PreparedStatement stmt = null;
         if (isExist(contact.getFirstName(), contact.getLastName()) > 0) {
@@ -278,21 +290,6 @@ public class AddressBookOperations implements AddressBookService {
             throw new RuntimeException(e);
         }
         return addressBookIds;
-    }
-
-    @Override
-    public boolean isExistAddressBook(int id) {
-        String sqlGetAddressBook = "select * from tbl_addressbook where id = ?";
-        try (Connection con = Constants.getConnection()) {
-            PreparedStatement pst = con.prepareStatement(sqlGetAddressBook);
-            pst.setInt(1, id);
-            ResultSet resultSet = pst.executeQuery();
-            if (resultSet.next())
-                return true;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return false;
     }
 
     @Override
